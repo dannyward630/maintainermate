@@ -53,6 +53,7 @@ on:
   issues:
     types: [opened, edited, reopened]
 permissions:
+  contents: read
   issues: write
   pull-requests: write
 jobs:
@@ -73,6 +74,10 @@ jobs:
 | `labels` | `bug,enhancement,documentation,question,tests,refactor,dependencies` | Labels Gemma may choose from |
 | `spam-threshold` | `70` | Score at or above which `spam-suspected` is added |
 
+## Repository-specific guidelines
+
+Add `.github/maintainermate.md` to the repository being triaged to provide concise, project-specific criteria. MaintainerMate reads it through the GitHub API and includes it in prompts for both issues and pull requests. The file is sent to Gemma along with the issue or pull request content, so do not put secrets in it. If the file is missing or empty, triage uses the default prompt.
+
 ## Try it locally
 
 No install needed (zero dependencies, Node 20+):
@@ -88,6 +93,10 @@ node src/cli.js owner/repo issue 45
 # Post the comment and labels for real
 node src/cli.js owner/repo pull 123 --post
 ```
+
+## Tests
+
+Run `npm test` with Node.js 20 or newer. The project uses Node's built-in test runner and has no runtime dependencies.
 
 ## Security note
 

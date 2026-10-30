@@ -1,0 +1,11 @@
+{
+  "name": "maintainermate",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

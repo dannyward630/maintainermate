@@ -8,7 +8,7 @@ inputs:
     description: "Google AI Studio API key used to call Gemma"
     required: true
   github-token:
-    description: "Token used to comment and label"
+    description: "Token with repository contents read access and issue and pull request comment/label access"
     required: false
     default: ${{ github.token }}
   model:
