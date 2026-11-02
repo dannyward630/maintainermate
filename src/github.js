@@ -1,8 +1,10 @@
 // Tiny GitHub REST client using built-in fetch (no dependencies).
 
-function client(token) {
+const MAX_REPOSITORY_GUIDELINES_CHARS = 8000;
+
+function client(token, fetchImpl = fetch) {
   async function gh(method, path, body) {
-    const res = await fetch(`https://api.github.com${path}`, {
+    const res = await fetchImpl(`https://api.github.com${path}`, {
       method,
       headers: {
         Authorization: `Bearer ${token}`,
@@ -12,12 +14,30 @@ function client(token) {
       body: body ? JSON.stringify(body) : undefined,
     });
     if (!res.ok) {
-      throw new Error(`GitHub ${method} ${path} -> ${res.status}: ${await res.text()}`);
+      const error = new Error(`GitHub ${method} ${path} -> ${res.status}: ${await res.text()}`);
+      error.status = res.status;
+      throw error;
     }
     return res.status === 204 ? null : res.json();
   }
 
+  async function getRepositoryGuidelines(repo) {
+    const path = "/contents/.github/maintainermate.md";
+    try {
+      const file = await gh("GET", `/repos/${repo}${path}`);
+      if (file.type !== "file" || file.encoding !== "base64" || typeof file.content !== "string") {
+        throw new Error(`GitHub GET /repos/${repo}${path} returned unsupported file content.`);
+      }
+      const content = Buffer.from(file.content.replace(/\s/g, ""), "base64").toString("utf8").trim();
+      return content ? content.slice(0, MAX_REPOSITORY_GUIDELINES_CHARS) : null;
+    } catch (error) {
+      if (error.status === 404) return null;
+      throw error;
+    }
+  }
+
   return {
+    getRepositoryGuidelines,
     getPull: (repo, n) => gh("GET", `/repos/${repo}/pulls/${n}`),
     getPullFiles: (repo, n) => gh("GET", `/repos/${repo}/pulls/${n}/files?per_page=100`),
     getIssue: (repo, n) => gh("GET", `/repos/${repo}/issues/${n}`),
